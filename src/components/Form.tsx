@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "../App.css";
 import { Button, TextField, Stack, Typography } from "@mui/material";
 import { Undo, Redo, Clear, Add } from "@mui/icons-material";
+import useLocalStorage from "../hooks/useLocalStorage";
 
 const Form = () => {
   const [inputValue, setInputValue] = useState<string>("");
@@ -9,13 +10,12 @@ const Form = () => {
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [undoActive, setUndoActive] = useState<boolean>(false);
   const [redosRemaining, setRedosRemaining] = useState<number>(0);
+  const { initialValues: initialStoredList, setNewValue: setStoredList } =
+    useLocalStorage("inputList");
 
   useEffect(() => {
-    const storedInputs = localStorage.getItem("inputList");
-    if (storedInputs) {
-      setInputList(JSON.parse(storedInputs));
-    }
-  }, []);
+    setInputList(initialStoredList);
+  }, [initialStoredList]);
 
   useEffect(() => {
     if (
@@ -30,10 +30,7 @@ const Form = () => {
 
   const saveToList = () => {
     setInputList([...inputList, inputValue]);
-    localStorage.setItem(
-      "inputList",
-      JSON.stringify([...inputList, inputValue])
-    );
+    setStoredList(JSON.stringify([...inputList, inputValue]));
     handleClear();
   };
 
