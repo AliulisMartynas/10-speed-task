@@ -3,61 +3,28 @@ import "../App.css";
 import { Button, TextField, Stack, Typography } from "@mui/material";
 import { Undo, Redo, Clear, Add } from "@mui/icons-material";
 import useLocalStorage from "../hooks/useLocalStorage";
+import useUndoRedo from "../hooks/useUndoRedo";
 
 const Form = () => {
-  const [inputValue, setInputValue] = useState<string>("");
   const [inputList, setInputList] = useState<string[]>([]);
-  const [inputHistory, setInputHistory] = useState<string[]>([]);
-  const [undoActive, setUndoActive] = useState<boolean>(false);
-  const [redosRemaining, setRedosRemaining] = useState<number>(0);
   const { initialValues: initialStoredList, setNewValue: setStoredList } =
     useLocalStorage("inputList");
+
+  const { state, newInput, undo, redo } = useUndoRedo();
+  const { inputValue, redosRemaining, undoActive } = state;
 
   useEffect(() => {
     setInputList(initialStoredList);
   }, [initialStoredList]);
 
   useEffect(() => {
-    if (
-      (inputValue && inputValue.length > 0) ||
-      (inputHistory.length > 0 && redosRemaining !== inputHistory.length)
-    ) {
-      setUndoActive(true);
-    } else {
-      setUndoActive(false);
-    }
-  }, [inputHistory, inputValue, redosRemaining]);
+    setInputList(initialStoredList);
+  }, [initialStoredList]);
 
   const saveToList = () => {
-    setInputList([...inputList, inputValue]);
-    setStoredList(JSON.stringify([...inputList, inputValue]));
-    handleClear();
-  };
-
-  const onInputChange = (value: string) => {
-    setInputValue(value);
-    setInputHistory((currentHistory) => [...currentHistory, value]);
-    setRedosRemaining(0);
-  };
-
-  const handleUndo = () => {
-    const historyIndex = inputHistory.length - 2 - redosRemaining;
-    if (historyIndex >= 0) {
-      setInputValue(inputHistory[historyIndex]);
-    } else {
-      setInputValue("");
-    }
-    setRedosRemaining(redosRemaining + 1);
-  };
-
-  const handleRedo = () => {
-    setInputValue(inputHistory[inputHistory.length - redosRemaining]);
-    setRedosRemaining(redosRemaining - 1);
-  };
-
-  const handleClear = () => {
-    setInputValue("");
-    setInputHistory((currentHistory) => [...currentHistory, ""]);
+    setInputList([...inputList, state.inputValue]);
+    setStoredList(JSON.stringify([...inputList, state.inputValue]));
+    newInput("");
   };
 
   return (
@@ -65,25 +32,25 @@ const Form = () => {
       <Stack direction="row" spacing={1}>
         <Button
           variant="contained"
-          startIcon={<Undo />}
-          onClick={handleUndo}
+          onClick={undo}
           disabled={undoActive === false}
+          endIcon={<Undo />}
         >
           Undo
         </Button>
         <Button
           variant="contained"
-          startIcon={<Redo />}
-          onClick={handleRedo}
+          onClick={redo}
           disabled={redosRemaining < 1}
+          endIcon={<Redo />}
         >
           Redo
         </Button>
         <Button
           variant="contained"
-          startIcon={<Clear />}
-          onClick={handleClear}
+          onClick={() => newInput("")}
           disabled={inputValue.length === 0}
+          endIcon={<Clear />}
         >
           Clear
         </Button>
@@ -91,13 +58,13 @@ const Form = () => {
       <div className="text-field">
         <TextField
           value={inputValue}
-          onChange={(event) => onInputChange(event.target.value)}
+          onChange={(event) => newInput(event.target.value)}
         />
       </div>
       <Button
         variant="contained"
-        startIcon={<Add />}
         onClick={saveToList}
+        endIcon={<Add />}
         disabled={inputValue.length === 0}
       >
         Save
@@ -106,7 +73,7 @@ const Form = () => {
         {inputList.map((listItem, index) => (
           <div
             key={index}
-            onClick={() => setInputValue(listItem)}
+            onClick={() => newInput(listItem)}
             className="list-item"
           >
             <Typography>{listItem}</Typography>
