@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import "../App.css";
-import { Button, TextField, Stack, Typography } from "@mui/material";
+import { Button, TextField, Stack } from "@mui/material";
 import { Undo, Redo, Clear, Add } from "@mui/icons-material";
 import useLocalStorage from "../hooks/useLocalStorage";
 import useUndoRedo from "../hooks/useUndoRedo";
+import List from "./List";
 
 const Form = () => {
   const [inputList, setInputList] = useState<string[]>([]);
@@ -69,17 +70,7 @@ const Form = () => {
       >
         Save
       </Button>
-      <div>
-        {inputList.map((listItem, index) => (
-          <div
-            key={index}
-            onClick={() => newInput(listItem)}
-            className="list-item"
-          >
-            <Typography>{listItem}</Typography>
-          </div>
-        ))}
-      </div>
+      <List inputList={inputList} newInput={newInput} />
     </div>
   );
 };
