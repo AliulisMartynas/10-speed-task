@@ -1,10 +1,15 @@
 import { useState } from "react";
 import "../App.css";
-import { Button, TextField, Stack } from "@mui/material";
+import { Button, TextField, Stack, Typography } from "@mui/material";
 import { Undo, Redo, Clear, Add } from "@mui/icons-material";
 
 const Form = () => {
   const [inputValue, setInputValue] = useState<string>("");
+  const [inputList, setInputList] = useState<string[]>([]);
+
+  const saveToList = () => {
+    setInputList([...inputList, inputValue]);
+  };
 
   const onInputChange = (value: string) => {
     setInputValue(value);
@@ -29,9 +34,20 @@ const Form = () => {
           onChange={(event) => onInputChange(event.target.value)}
         />
       </div>
-      <Button variant="contained" startIcon={<Add />}>
+      <Button variant="contained" startIcon={<Add />} onClick={saveToList}>
         Save
       </Button>
+      <div>
+        {inputList.map((listItem, index) => (
+          <div
+            key={index}
+            onClick={() => setInputValue(listItem)}
+            className="list-item"
+          >
+            <Typography>{listItem}</Typography>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
