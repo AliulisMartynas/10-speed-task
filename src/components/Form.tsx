@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../App.css";
 import { Button, TextField, Stack, Typography } from "@mui/material";
 import { Undo, Redo, Clear, Add } from "@mui/icons-material";
@@ -7,12 +7,28 @@ const Form = () => {
   const [inputValue, setInputValue] = useState<string>("");
   const [inputList, setInputList] = useState<string[]>([]);
 
+  useEffect(() => {
+    const storedInputs = localStorage.getItem("inputList");
+    if (storedInputs) {
+      setInputList(JSON.parse(storedInputs));
+    }
+  }, []);
+
   const saveToList = () => {
     setInputList([...inputList, inputValue]);
+    localStorage.setItem(
+      "inputList",
+      JSON.stringify([...inputList, inputValue])
+    );
+    handleClear();
   };
 
   const onInputChange = (value: string) => {
     setInputValue(value);
+  };
+
+  const handleClear = () => {
+    setInputValue("");
   };
 
   return (
@@ -24,7 +40,12 @@ const Form = () => {
         <Button variant="contained" startIcon={<Redo />}>
           Redo
         </Button>
-        <Button variant="contained" startIcon={<Clear />}>
+        <Button
+          variant="contained"
+          startIcon={<Clear />}
+          onClick={handleClear}
+          disabled={inputValue.length === 0}
+        >
           Clear
         </Button>
       </Stack>
@@ -34,7 +55,12 @@ const Form = () => {
           onChange={(event) => onInputChange(event.target.value)}
         />
       </div>
-      <Button variant="contained" startIcon={<Add />} onClick={saveToList}>
+      <Button
+        variant="contained"
+        startIcon={<Add />}
+        onClick={saveToList}
+        disabled={inputValue.length === 0}
+      >
         Save
       </Button>
       <div>
